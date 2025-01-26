@@ -1,36 +1,46 @@
 class Indicators:
     def __init__(self):
         self.sma_values = {}
-        self.sma_minutetime = []
+        self.sma_lasttime = {}
         self.hourlysma_values = {}
-        self.timeElapsed = 0
+        self.timeElapsed = None
 
     # Simple Moving Average
     def SMA(self, input, length, timeSinceEpoch):
+        #print(f"SMA: {input}, {length}, {timeSinceEpoch}")
+
+        if length not in self.sma_lasttime:
+            self.sma_lasttime[length] = 0
+
+        if self.sma_lasttime[length] == 0:
+            #print("Last time:", self.sma_lasttime)
+            self.sma_lasttime[length] = timeSinceEpoch
         
-        # if there are less than 2 entries
-        if len(self.sma_minutetime) <= 1: 
-            # add entry to time list and return since there
-            # is no way to validate that a minute has passed
-            self.sma_minutetime.append(timeSinceEpoch)
-            return
-        elif len(self.sma_minutetime) == 2:
-            self.sma_minutetime.pop(0)
-            self.sma_minutetime.append(timeSinceEpoch)
+        #print("Last Time 2: ", self.sma_lasttime)
+        #print("Current time: ", timeSinceEpoch)
 
-        self.timeElapsed = self.sma_minutetime[1] - self.sma_minutetime[0]
+        timediff = timeSinceEpoch - self.sma_lasttime[length]
+        #print("TimeDiff: ", timediff)
 
-        if length not in self.sma_values and self.timeElapsed > 59999:
-            self.sma_values[length] = []
-            
-        if len(self.sma_values[length]) < length:
-            self.sma_values[length].append(input)
-            return 
+        if timediff >= 59999:
+            self.sma_lasttime[length] = timeSinceEpoch
+
+            if length not in self.sma_values:
+                self.sma_values[length] = []
+
+            if len(self.sma_values[length]) < length:
+                    print(f"Adding {input} to  {self.sma_values[length]}")
+                    self.sma_values[length].append(input)
+                    print(f"Added {input} to  {self.sma_values[length]}")
+                    return 
+            else:
+                self.sma_values[length].pop(0)
+                self.sma_values[length].append(input)
+                print("Values to be averaged: ",self.sma_values[length])
+                return sum(self.sma_values[length])/length
         else:
-            self.sma_values[length].pop(0)
-            self.sma_values[length].append(input)
-            return sum(self.sma_values[length])/length
-
+            return
+        
     # Hourly SimpleMovingAverage
     def hourlySMA(self, input, length):
         

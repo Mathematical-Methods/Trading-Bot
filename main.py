@@ -5,9 +5,12 @@ import time
 import json
 from Indicators import Indicators
 from datetime import datetime
+from responseFabricator import ResponseFabricator
 
 from dotenv import load_dotenv
 
+# initialize Indicator class
+indicators = Indicators()
 
 shared_list = []
 def response_handler(message):
@@ -31,12 +34,11 @@ def screener(service):
 def buyCondition(content):
     closePriceMinutely =  content.get("4")
     chartTime = content.get("7")
-    print(chartTime)
-    indicator = Indicators()
-
-    indicator.SMA(closePriceMinutely, 2, chartTime)
-
-    print(indicator.timeElapsed)
+    twoSMA = indicators.SMA(closePriceMinutely, 2, chartTime)
+    fourSMA = indicators.SMA(closePriceMinutely, 4, chartTime)
+    
+    print(f"TwoSMA:{twoSMA}")
+    print(f"FourSMA:{fourSMA}")
 
     '''
         Stopped HERE! attempting to work out a time-based recording of price data. 
@@ -62,7 +64,7 @@ def stockTrader(service):
         print(f"[{service_type} - {symbol}]({datetime.fromtimestamp(service_timestamp//1000)}): {fields}")
 
     if buyCondition(content):
-        logging.info("Put in order to buy %s", symbol)
+        pass #logging.info("Put in order to buy %s", symbol)
 
     #print("stockTrader()")
     #print(json.dumps(service, indent=2))
@@ -84,39 +86,22 @@ def main():
     client = schwabdev.Client(app_key=os.getenv('app_key'),
                               app_secret=os.getenv('app_secret'),
                               callback_url=os.getenv('callback_url'))
-    streamer = client.stream
     
-    # start streamer
-    streamer.start(response_handler)
+    
 
-    """
-    The screener. 
-    -----------------------------------
-    Philosophy: start listening for good stocks to trade before trading.
+    # start streamer - Temporarily commented out
+    #streamer = client.stream
+    #streamer.start(response_handler)
 
-    Explanation: The initial screener request can be the programmer's best guess 
-    at what the appropriate screener should be. 
-
-    In screenerFilter(), due to the ability to unsubscribe, add, etc. New screeners
-    can be added, and a wider view of the market can be seen. This requires the 
-    function to be called constantly, or to be run in a thread. Too much to figure
-    out for now.
-
-    For now, this program will focus on buying and selling, so there will not be any scanning.
-    This is why the initial screener/scanner is commented out.
-    """   
+    # Send in what we want to listen to - Temporarily commented out
     #streamer.send(streamer.screener_equity("NASDAQ_VOLUME_30", "0,1,2,3,4,5,6,7,8"))
-    
-    """
-    The equity listener.
-    --------------------
-    Until concurrency has been implemented for screenerFilter(), I will simply
-    give the program a stock to follow.
-
-    Hence why the next line exists.
-    """
     #streamer.send(streamer.level_one_equities("QQQ", "0,1,2,3,4,5,6,7,8"))
-    streamer.send(streamer.chart_equity("QQQ","0,1,2,3,4,5,6,7,8"))
+    #streamer.send(streamer.chart_equity("QQQ","0,1,2,3,4,5,6,7,8"))
+
+
+    streamer = ResponseFabricator()
+    streamer.setchart_equity(switch=True)
+    streamer.start(response_handler, key = "APPL",fields = "0,1,2,3,4,5,6,7,8")
 
     # Temporary flag for being in a longPosition
     longPosition = False
