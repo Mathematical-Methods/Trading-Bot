@@ -36,7 +36,7 @@
    - **Outputs**: List of position dictionaries (e.g., symbol, quantity, price).
    - **Behavior**: Queries real-time position data from Schwab.
 
-7. **`load_initial_historical_data(client, symbols, indicators)`** *Complete*
+7. **`load_initial_historical_data(client, symbols, indicators)`** *Complete, Not passed.*
    - **Description**: Fetches initial historical minute-level data for a list of symbols and passes it to the indicators object.
    - **Inputs**: Schwab client object, list of initial symbols, `Indicators` object.
    - **Outputs**: Boolean indicating success, `Indicators` object updated with historical data.
