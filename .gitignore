@@ -1,0 +1,11 @@
+ .env
+tokens.json
+tree
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
