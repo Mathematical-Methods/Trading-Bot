@@ -7,7 +7,7 @@ This list outlines the core classes required for the Automated Trading Bot, orga
 ## 1. Domain Layer
 Contains the core business entities and logic, independent of external systems.
 
-- **`Portfolio`** *Complete*
+- **`Portfolio`** *Untested*
   - **Description**: Manages the simulated portfolio, tracking cash balance, positions (e.g., stocks owned), and realized gains/losses from trades.
   - **Key Methods**:
     - `buy(symbol, quantity, price)`: Adds a position to the portfolio.
@@ -15,7 +15,7 @@ Contains the core business entities and logic, independent of external systems.
     - `get_position(symbol)`: Returns the current position for a given stock.
     - `report_gains_losses()`: Calculates and returns total realized profits or losses.
 
-- **`Indicators`** *Complete*
+- **`Indicators`** *Untested*
   - **Description**: Manages and calculates technical indicators (e.g., Relative Strength Index, Simple Moving Average) across multiple time frames (e.g., minute, hour) using market data.
   - **Key Methods**:
     - `__init__(timeframe_configs)`: Initializes the class with configurations for different time frames.
@@ -35,7 +35,7 @@ Handles interactions with external systems, such as APIs and real-time data stre
     - `account_positions()`: Gets current positions held in the account.
     - `order_place(order)`: Submits a buy or sell order to the Schwab API.
 
-- **`Streamer`**
+- **`Streamer`** *Functionality provided by schwabdev*
   - **Description**: Manages the Schwab data streamer for real-time market updates, handling subscriptions and incoming messages.
   - **Key Methods**:
     - `start_auto()`: Starts the streaming process automatically.
