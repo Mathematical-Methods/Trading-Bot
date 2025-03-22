@@ -1,4 +1,4 @@
- .env
+.env
 tokens.json
 tree
 __pycache__/
@@ -9,3 +9,4 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.venv
