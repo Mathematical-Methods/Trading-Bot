@@ -15,7 +15,7 @@ Contains the core business entities and logic, independent of external systems.
     - `get_position(symbol)`: Returns the current position for a given stock.
     - `report_gains_losses()`: Calculates and returns total realized profits or losses.
 
-- **`Indicators`**
+- **`Indicators`** *Complete*
   - **Description**: Manages and calculates technical indicators (e.g., Relative Strength Index, Simple Moving Average) across multiple time frames (e.g., minute, hour) using market data.
   - **Key Methods**:
     - `__init__(timeframe_configs)`: Initializes the class with configurations for different time frames.
