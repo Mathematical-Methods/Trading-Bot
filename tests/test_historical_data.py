@@ -2,12 +2,13 @@ import unittest
 from unittest import mock
 
 # Assuming Indicators class is defined in domain.indicators
-from domain.indicators import Indicators
+from domain.entities.indicators import Indicators
+from infrastructure.adapters.historical_data import load_initial_historical_data
 
 class TestLoadInitialHistoricalData(unittest.TestCase):
     
     @mock.patch('schwabdev.Client')
-    @mock.patch('domain.indicators.Indicators')
+    @mock.patch('domain.entities.indicators.Indicators')
     def test_successful_loading(self, mock_indicators, mock_client):
         # Mock API response with two candles for each symbol
         mock_response = mock.Mock()
@@ -36,7 +37,7 @@ class TestLoadInitialHistoricalData(unittest.TestCase):
         mock_indicators_instance.update_minute_data.assert_any_call("GOOG", 101.0, 1100, 1609459260000)
     
     @mock.patch('schwabdev.Client')
-    @mock.patch('domain.indicators.Indicators')
+    @mock.patch('domain.entities.indicators.Indicators')
     def test_api_error(self, mock_indicators, mock_client):
         # Mock API response: success for AAPL, error for GOOG
         mock_response_aapl = mock.Mock()
@@ -57,7 +58,7 @@ class TestLoadInitialHistoricalData(unittest.TestCase):
         self.assertEqual(mock_indicators.return_value.update_minute_data.call_count, 1)  # Only AAPL's candle
     
     @mock.patch('schwabdev.Client')
-    @mock.patch('domain.indicators.Indicators')
+    @mock.patch('domain.entities.indicators.Indicators')
     def test_empty_symbols(self, mock_indicators, mock_client):
         # Call with an empty symbols list
         success = load_initial_historical_data(mock_client, [], mock_indicators.return_value)
@@ -68,7 +69,7 @@ class TestLoadInitialHistoricalData(unittest.TestCase):
         mock_indicators.return_value.update_minute_data.assert_not_called()
     
     @mock.patch('schwabdev.Client')
-    @mock.patch('domain.indicators.Indicators')
+    @mock.patch('domain.entities.indicators.Indicators')
     def test_no_candles(self, mock_indicators, mock_client):
         # Mock API response with no candles
         mock_response = mock.Mock()
