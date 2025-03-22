@@ -27,7 +27,7 @@ Contains the core business entities and logic, independent of external systems.
 ## 2. Infrastructure Layer
 Handles interactions with external systems, such as APIs and real-time data streams.
 
-- **`SchwabClientAdapter`**
+- **`SchwabClientAdapter`** *Complete*
   - **Description**: Acts as an adapter for the Schwab API, providing a clean interface for account management, data retrieval, and trade execution.
   - **Key Methods**:
     - `price_history(symbol, period)`: Fetches historical price data for a stock.
