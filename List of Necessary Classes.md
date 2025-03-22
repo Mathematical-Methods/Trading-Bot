@@ -7,7 +7,7 @@ This list outlines the core classes required for the Automated Trading Bot, orga
 ## 1. Domain Layer
 Contains the core business entities and logic, independent of external systems.
 
-- **`Portfolio`**
+- **`Portfolio`** *Complete*
   - **Description**: Manages the simulated portfolio, tracking cash balance, positions (e.g., stocks owned), and realized gains/losses from trades.
   - **Key Methods**:
     - `buy(symbol, quantity, price)`: Adds a position to the portfolio.
