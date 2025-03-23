@@ -3,7 +3,8 @@ import json
 import datetime
 from time import sleep, time
 from collections import deque
-from schwabdev import Client, Stream
+from schwabdev import Client
+from schwabdev.client import Stream
 from dotenv import load_dotenv
 import os
 import zoneinfo
