@@ -13,5 +13,4 @@ build/
 playground.py
 TradingBot.py
 Trader API - Market Data - Charles Schwab Developer Portal.pdf
-indicators.py
-portfolio.py
+CHART_EQUITY.json

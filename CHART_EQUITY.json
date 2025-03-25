@@ -1,0 +1,22 @@
+{
+    "data": [
+      {
+        "service": "CHART_EQUITY",
+        "timestamp": 1668715930585, //timestamp in ms.
+        "command": "SUBS",
+        "content": [
+          {
+            "key": "AAPL",
+            "1": 150.0, // open
+            "2": 151.5, // High
+            "3": 149.8, // low
+            "4": 150.5, // close
+            "5": 100000.0, // volume
+            "6": 123456, //candle sequence number
+            "7": 1668715930000, // chart time timestamp in ms.
+            "8": 1 // chart day
+          }
+        ]
+      }
+    ]
+  }

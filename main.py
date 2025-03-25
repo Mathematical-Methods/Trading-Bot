@@ -5,6 +5,7 @@ import datetime
 import zoneinfo
 import json
 from indicators import Indicators
+from portfolio import Portfolio
 from dotenv import load_dotenv
 from time import sleep, time
 
