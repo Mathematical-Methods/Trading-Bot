@@ -4,15 +4,9 @@ import schwabdev.stream
 import datetime
 import zoneinfo
 import json
+from indicators import Indicators
 from dotenv import load_dotenv
 from time import sleep, time
-
-
-
-
-
-
-
 
 class TradingBot:
     def __init__(self, app_key, app_secret, symbol, simulate):
@@ -22,6 +16,7 @@ class TradingBot:
         self.shared_list = []
         self.client = schwabdev.Client(app_key, app_secret,'https://127.0.0.1')
         self.stream = schwabdev.stream.Stream(self.client)
+        self.indicators = Indicators()
 
     def response_handler(self, message):
         """Append incoming streamer messages to the shared list."""
@@ -77,49 +72,46 @@ class TradingBot:
             if close_price is None or volume is None or timestamp is None:
                 continue
 
-            updated = self.indicators.update_minute_data(symbol, close_price, volume, timestamp)
-            if updated:
-                action = self.buy_condition(symbol)
-                if action == "buy":
-                    if self.simulate:
-                        if not self.portfolio.get_position(symbol):
-                            self.portfolio.buy(symbol, close_price, 100)
+            
+            action = self.buy_condition(symbol)
+            if action == "buy":
+                if self.simulate:
+                    if not self.portfolio.get_position(symbol):
+                        self.portfolio.buy(symbol, close_price, 100)
+                else:
+                    order = {
+                        "orderType": "MARKET",
+                        "session": "NORMAL",
+                        "duration": "DAY",
+                        "orderStrategyType": "SINGLE",
+                        "orderLegCollection": [
+                            {"instruction": "BUY", "quantity": 100, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
+                        ]
+                    }
+                    response = self.client.order_place(self.account_hash, order)
+                    if response.ok:
+                        self.logger.info(f"[REAL] Placed buy order for 100 shares of {symbol}")
                     else:
-                        order = {
-                            "orderType": "MARKET",
-                            "session": "NORMAL",
-                            "duration": "DAY",
-                            "orderStrategyType": "SINGLE",
-                            "orderLegCollection": [
-                                {"instruction": "BUY", "quantity": 100, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
-                            ]
-                        }
-                        response = self.client.order_place(self.account_hash, order)
-                        if response.ok:
-                            self.logger.info(f"[REAL] Placed buy order for 100 shares of {symbol}")
-                        else:
-                            self.logger.error(f"Failed to place buy order: {response.text}")
-                elif action == "sell":
-                    if self.simulate:
-                        if self.portfolio.get_position(symbol):
-                            self.portfolio.sell(symbol, close_price, 100)
+                        self.logger.error(f"Failed to place buy order: {response.text}")
+            elif action == "sell":
+                if self.simulate:
+                    if self.portfolio.get_position(symbol):
+                        self.portfolio.sell(symbol, close_price, 100)
+                else:
+                    order = {
+                        "orderType": "MARKET",
+                        "session": "NORMAL",
+                        "duration": "DAY",
+                        "orderStrategyType": "SINGLE",
+                        "orderLegCollection": [
+                            {"instruction": "SELL", "quantity": 100, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
+                        ]
+                    }
+                    response = self.client.order_place(self.account_hash, order)
+                    if response.ok:
+                        self.logger.info(f"[REAL] Placed sell order for 100 shares of {symbol}")
                     else:
-                        order = {
-                            "orderType": "MARKET",
-                            "session": "NORMAL",
-                            "duration": "DAY",
-                            "orderStrategyType": "SINGLE",
-                            "orderLegCollection": [
-                                {"instruction": "SELL", "quantity": 100, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
-                            ]
-                        }
-                        response = self.client.order_place(self.account_hash, order)
-                        if response.ok:
-                            self.logger.info(f"[REAL] Placed sell order for 100 shares of {symbol}")
-                        else:
-                            self.logger.error(f"Failed to place sell order: {response.text}")
-
-
+                        self.logger.error(f"Failed to place sell order: {response.text}")
 
 if __name__ == '__main__':
     load_dotenv()
