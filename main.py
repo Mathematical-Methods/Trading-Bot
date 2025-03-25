@@ -1,10 +1,11 @@
+import schwabdev
+
 class TradingBot:
-    def __init__(self, cash, buy_threshold, sell_threshold):
+    def __init__(self, cash, symbol):
         self.cash = cash
         self.holdings = 0
-        self.buy_threshold = buy_threshold
-        self.sell_threshold = sell_threshold
-
+        self.symbol = symbol
+    
     def decide_action(self, price):
         if price < self.buy_threshold:
             return 'buy'
@@ -21,3 +22,5 @@ class TradingBot:
         elif action == 'sell' and self.holdings > 0:
             self.cash += price
             self.holdings -= 1
+    
+        
