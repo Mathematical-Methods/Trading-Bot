@@ -11,3 +11,4 @@ dist/
 build/
 .venv
 playground.py
+TradingBot.py
