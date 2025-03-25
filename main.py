@@ -19,11 +19,36 @@ class TradingBot:
         self.stream = schwabdev.stream.Stream(self.client)
         self.indicators = Indicators()
 
-    def response_handler(self, message):
+    def action_condition(self, symbol):
+        """
+        Determine trading action based on the intraday swing trading strategy.
+
+        Returns:
+            str: "buy", "sell", or "hold"
+        """
+        # Import symbol history.
+        # ind = self.indicators.indicators.get(symbol, {})
+
+        ## return hold if not enough data.
+    
+
+        ## Determine Buy condition according to Truth values.
+        if #ma_cross_up and rsi_buy and macd_buy and bollinger_condition and volume_condition:
+            # return "Buy" if conditions are true
+            return "buy"
+        if #ma_cross_down and rsi_sell and macd_sell and bollinger_condition:
+            # return "sell" if conditioner are true for sell
+            return "sell"
+        return "hold"
+
+    def response_handler(self, message): # Don't touch.
         """Append incoming streamer messages to the shared list."""
         self.shared_list.append(message)
 
-    def run(self):
+    def report_gains_losses():
+        pass
+
+    def run(self): # TODO report gains losses
         """Start the trading bot's main loop."""
         initial_symbols = self.symbol
 
@@ -50,9 +75,6 @@ class TradingBot:
                             if service["service"] == "CHART_EQUITY":
                                 print(f"{service}")
                                 self.stock_trader(service)
-                            # TODO     
-                            #elif service["service"] == "History":
-                            #    self.stock_scanner(service)
                     elif rtype == "notify":
                         for service in services:
                             self.logger.info(f"[Heartbeat]({datetime.datetime.fromtimestamp(int(service.get('heartbeat', 0))//1000)})")
@@ -72,13 +94,13 @@ class TradingBot:
             timestamp = content.get("7")
             if close_price is None or volume is None or timestamp is None:
                 continue
-
             
-            action = self.buy_condition(symbol)
+            action = self.action(symbol)
             if action == "buy":
                 if self.simulate:
-                    if not self.portfolio.get_position(symbol):
-                        self.portfolio.buy(symbol, close_price, 100)
+                    pass
+                    #if not self.portfolio.get_position(symbol):
+                    #    self.portfolio.buy(symbol, close_price, 100)
                 else:
                     order = {
                         "orderType": "MARKET",
@@ -86,12 +108,12 @@ class TradingBot:
                         "duration": "DAY",
                         "orderStrategyType": "SINGLE",
                         "orderLegCollection": [
-                            {"instruction": "BUY", "quantity": 100, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
+                            {"instruction": "BUY", "quantity": 1, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
                         ]
                     }
                     response = self.client.order_place(self.account_hash, order)
                     if response.ok:
-                        self.logger.info(f"[REAL] Placed buy order for 100 shares of {symbol}")
+                        self.logger.info(f"[REAL] Placed buy order for 1 share of {symbol}")
                     else:
                         self.logger.error(f"Failed to place buy order: {response.text}")
             elif action == "sell":
