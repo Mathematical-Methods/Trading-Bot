@@ -164,20 +164,52 @@ class TradingBot:
 
 """ Unit tests """
 
-def testinitialization(app_key,app_secret,callback_url):
+def allUnitTests():
+    print("Unit test")
+    client = initialization(os.getenv("app_key"), os.getenv("app_secret"), os.getenv("callback_url"))
+    print(client.account_linked().json()[0])
+    pass
+
+def initialization(app_key,app_secret,callback_url):
     client = schwabdev.client.Client(app_key,app_secret,callback_url)
     return client
+
+def testgetAccountNumber(description, expectedvalue, actualvalue):
+    
+    if expectedvalue == actualvalue:
+        result = "PASS"
+    else:
+        result = "*FAIL*"
+    print(f"{description} {result:>70s} ")
 
 
 
 if __name__ == '__main__':
     load_dotenv()
     """Begin Unit testing"""
-    
 
+    testMode = input("Start in test mode? (y/N) ")
+    if testMode == 'y':
+        allUnitTests()
+    else:
+        print("Beginning Trading Bot.")
+        simulateMode = input("Start in simulation mode? (y/N) ")
+        if simulateMode == 'y':
+            simulate = True
+        else:
+            simulate = False
+            pass
 
+        print(f"Simulate mode: {simulate}")
+        if simulate is not True:
+            areYouSure = input("Are you sure you want to run in Production mode? (y/N) ")
+        if areYouSure == 'y':
+            simulate = True
+        else:
+            simulate = False
+            pass
+        print(f"Simulate mode: {simulate}")
 
-
-
-    #bot = TradingBot(os.getenv('app_key'), os.getenv('app_secret'), "TSLL", simulate=True)
-    #bot.run()
+        print("Bot commented out.")
+        #bot = TradingBot(os.getenv('app_key'), os.getenv('app_secret'), "TSLL", simulate=True)
+        #bot.run()
