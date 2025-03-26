@@ -9,6 +9,21 @@ from portfolio import Portfolio
 from dotenv import load_dotenv
 from time import sleep, time
 
+class AccountInformation:
+    def __init__(self, client):
+        self.client = client
+        self.account_linked = []
+
+    def refreshAccountLinked(self):
+        self.account_linked = self.client.account_linked()
+
+    def getAccountNumber(self):
+        return self.account_linked.json()[0].get('accountNumber')
+
+    def getAccountHash(self):
+        return self.account_linked.json()[0].get('accountHash')
+
+
 class TradingBot:
     def __init__(self, app_key, app_secret, symbol, simulate):
         self.app_key = app_key
@@ -17,7 +32,8 @@ class TradingBot:
         self.shared_list = []
         self.client = schwabdev.Client(app_key, app_secret,'https://127.0.0.1')
         self.stream = schwabdev.stream.Stream(self.client)
-        self.indicators = Indicators()
+        #self.indicators = Indicators()
+        self.account = AccountInformation(self.client)
 
     def action_condition(self, symbol):
         """
@@ -25,13 +41,13 @@ class TradingBot:
 
         Returns:
             str: "buy", "sell", or "hold"
-        """
+        
         # Import symbol history.
         # ind = self.indicators.indicators.get(symbol, {})
 
         ## return hold if not enough data.
     
-
+        # TODO
         ## Determine Buy condition according to Truth values.
         if #ma_cross_up and rsi_buy and macd_buy and bollinger_condition and volume_condition:
             # return "Buy" if conditions are true
@@ -40,12 +56,17 @@ class TradingBot:
             # return "sell" if conditioner are true for sell
             return "sell"
         return "hold"
+        """
+        pass
 
     def response_handler(self, message): # Don't touch.
         """Append incoming streamer messages to the shared list."""
         self.shared_list.append(message)
 
     def report_gains_losses():
+        pass
+
+    def setup():
         pass
 
     def run(self): # TODO report gains losses
@@ -63,7 +84,7 @@ class TradingBot:
 
         self.stream.send(self.stream.chart_equity(",".join(initial_symbols), "0,1,2,3,4,5,6,7,8"))
 
-        report_interval = 300  # 5 minutes
+        report_interval = 60  # 5 minutes
         last_report_time = time()
 
         while True:
@@ -81,6 +102,8 @@ class TradingBot:
             current_time = time()
             if current_time - last_report_time >= report_interval and self.stream.active:
                 #TODO self.portfolio.report_gains_losses()
+                # account_linked = client.account_linked()
+                # account_details = client.account_details(, fields=None)
                 last_report_time = current_time
             sleep(0.5)
 
@@ -95,11 +118,14 @@ class TradingBot:
             if close_price is None or volume is None or timestamp is None:
                 continue
             
+            ## TODO et cash available for trading.
+
             action = self.action(symbol)
             if action == "buy":
                 if self.simulate:
                     pass
-                    #if not self.portfolio.get_position(symbol):
+                    #TODO 
+                    # if not self.portfolio.get_position(symbol):
                     #    self.portfolio.buy(symbol, close_price, 100)
                 else:
                     order = {
@@ -136,7 +162,22 @@ class TradingBot:
                     else:
                         self.logger.error(f"Failed to place sell order: {response.text}")
 
+""" Unit tests """
+
+def testinitialization(app_key,app_secret,callback_url):
+    client = schwabdev.client.Client(app_key,app_secret,callback_url)
+    return client
+
+
+
 if __name__ == '__main__':
     load_dotenv()
-    bot = TradingBot(os.getenv('app_key'), os.getenv('app_secret'), "APPL", simulate=True)
-    bot.run()
+    """Begin Unit testing"""
+    
+
+
+
+
+
+    #bot = TradingBot(os.getenv('app_key'), os.getenv('app_secret'), "TSLL", simulate=True)
+    #bot.run()
