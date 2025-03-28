@@ -4,10 +4,13 @@ import schwabdev.stream
 import datetime
 import zoneinfo
 import json
+import requests
+import logging
 from indicators import Indicators
 from portfolio import Portfolio
 from dotenv import load_dotenv
 from time import sleep, time
+
 
 class AccountInformation:
     def __init__(self, client):
@@ -15,13 +18,26 @@ class AccountInformation:
         self.account_linked = []
 
     def refreshAccountLinked(self):
-        self.account_linked = self.client.account_linked()
+        try:
+            response = self.client.account_linked()
+            if response.ok:
+                # Store the parsed data, not the response object
+                self.account_linked = response.json()  # Or response.text if it’s not JSON
+                return True
+            else:
+                # Log the failure for debugging (optional)
+                print(f"Failed to refresh account linked: {response.status_code} - {response.text}")
+                return False
+        except requests.exceptions.RequestException as e:
+            # Handle network or API errors
+            print(f"Error refreshing account linked: {e}")
+            return False
 
     def getAccountNumber(self):
-        return self.account_linked.json()[0].get('accountNumber')
+        return self.account_linked[0].get('accountNumber')
 
     def getAccountHash(self):
-        return self.account_linked.json()[0].get('accountHash')
+        return self.account_linked[0].get('accountHash')
 
 
 class TradingBot:
@@ -165,34 +181,54 @@ class TradingBot:
 """ Unit tests """
 
 def allUnitTests():
-    print("Unit test")
+    """Begin all Unit Tests"""
+    logging.debug("Unit tests:")
     client = initialization(os.getenv("app_key"), os.getenv("app_secret"), os.getenv("callback_url"))
-    print(client.account_linked().json()[0])
-    pass
+    
+    """Begin Test of AccountInformation class"""
+    logging.debug("Begin Test of AccountInformation class")
+    account = AccountInformation(client)
+    account.refreshAccountLinked()
+    testStringEquality("[AccountInformation.getAccountNumber] Test accountNumber method.",
+                       os.getenv("account_number"),
+                       account.getAccountNumber())
+    testStringEquality("[AccountInformation.getAccountHash] Test accountHash method.",
+                       os.getenv("account_hash"),
+                       account.getAccountHash())
+    
+
+    """End of Testing"""
+    logging.debug("End of unit tests.")
 
 def initialization(app_key,app_secret,callback_url):
     client = schwabdev.client.Client(app_key,app_secret,callback_url)
     return client
 
-def testgetAccountNumber(description, expectedvalue, actualvalue):
+def testStringEquality(description, expectedvalue, actualvalue):
     
     if expectedvalue == actualvalue:
         result = "PASS"
     else:
         result = "*FAIL*"
-    print(f"{description} {result:>70s} ")
+    print(f"{description:<70s} {result} ")
 
 
 
 if __name__ == '__main__':
     load_dotenv()
+    logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
     """Begin Unit testing"""
 
     testMode = input("Start in test mode? (y/N) ")
     if testMode == 'y':
+        logging.info("Begin Unit Testing")
         allUnitTests()
     else:
-        print("Beginning Trading Bot.")
+        logging.info("Beginning Trading Bot")
         simulateMode = input("Start in simulation mode? (y/N) ")
         if simulateMode == 'y':
             simulate = True
@@ -200,7 +236,7 @@ if __name__ == '__main__':
             simulate = False
             pass
 
-        print(f"Simulate mode: {simulate}")
+        logging.debug(f"Simulate mode: {simulate}")
         if simulate is not True:
             areYouSure = input("Are you sure you want to run in Production mode? (y/N) ")
         if areYouSure == 'y':
@@ -208,8 +244,8 @@ if __name__ == '__main__':
         else:
             simulate = False
             pass
-        print(f"Simulate mode: {simulate}")
+        logging.debug(f"Simulate mode: {simulate}")
 
-        print("Bot commented out.")
+        logging.debug("Bot commented out.")
         #bot = TradingBot(os.getenv('app_key'), os.getenv('app_secret'), "TSLL", simulate=True)
         #bot.run()
