@@ -16,6 +16,7 @@ class AccountInformation:
     def __init__(self, client):
         self.client = client
         self.account_linked = []
+        self.account_details = []
 
     def refreshAccountLinked(self):
         try:
@@ -31,6 +32,22 @@ class AccountInformation:
         except requests.exceptions.RequestException as e:
             # Handle network or API errors
             print(f"Error refreshing account linked: {e}")
+            return False
+
+    def refreshAccountDetails(self,account_hash):
+        try:
+            response = self.client.account_details(account_hash, fields=None)
+            if response.ok:
+                # Store the parsed data, not the response object
+                self.account_details= response.json()  # Or response.text if it’s not JSON
+                return True
+            else:
+                # Log the failure for debugging (optional)
+                print(f"Failed to refresh account details: {response.status_code} - {response.text}")
+                return False
+        except requests.exceptions.RequestException as e:
+            # Handle network or API errors
+            print(f"Error refreshing account details: {e}")
             return False
 
     def getAccountNumber(self):
@@ -79,11 +96,13 @@ class TradingBot:
         """Append incoming streamer messages to the shared list."""
         self.shared_list.append(message)
 
-    def report_gains_losses():
+    def setUp(self):
+        # TODO 
+        
+        # retrieve price history for symbol, only the amount needed (for now a few hours of minutely candles at a time)
+        
         pass
 
-    def setup():
-        pass
 
     def run(self): # TODO report gains losses
         """Start the trading bot's main loop."""
@@ -111,15 +130,20 @@ class TradingBot:
                         for service in services:
                             if service["service"] == "CHART_EQUITY":
                                 print(f"{service}")
-                                self.stock_trader(service)
+                                self.stock_trader(service) 
                     elif rtype == "notify":
                         for service in services:
                             self.logger.info(f"[Heartbeat]({datetime.datetime.fromtimestamp(int(service.get('heartbeat', 0))//1000)})")
             current_time = time()
             if current_time - last_report_time >= report_interval and self.stream.active:
-                #TODO self.portfolio.report_gains_losses()
-                # account_linked = client.account_linked()
-                # account_details = client.account_details(, fields=None)
+                #TODO - In this space, I would like to perform cyclical actions, such as reconciling account information.
+                
+                # get account information, and load it into the AccountInformation class.
+
+                # compare account information, such as cashAvalableforTrading, with the updated values and replace if there is a difference.
+
+                # print a reporting of the position.
+
                 last_report_time = current_time
             sleep(0.5)
 
@@ -134,16 +158,21 @@ class TradingBot:
             if close_price is None or volume is None or timestamp is None:
                 continue
             
-            ## TODO et cash available for trading.
+            # TODO - Get cash available for trading.
+            
+            # quantity = cashAvailableForTrading * 0.02 // close_price
 
             action = self.action(symbol)
             if action == "buy":
                 if self.simulate:
                     pass
-                    #TODO 
+                    #TODO - implement portfolio class.
                     # if not self.portfolio.get_position(symbol):
-                    #    self.portfolio.buy(symbol, close_price, 100)
+                    #    self.portfolio.buy(symbol, close_price, quantity)
                 else:
+                    #TODO - implement dynamic quantity
+                    # 
+
                     order = {
                         "orderType": "MARKET",
                         "session": "NORMAL",
@@ -153,28 +182,34 @@ class TradingBot:
                             {"instruction": "BUY", "quantity": 1, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
                         ]
                     }
-                    response = self.client.order_place(self.account_hash, order)
+                    response = self.client.order_place(self.account.getAccountHash(), order)
                     if response.ok:
                         self.logger.info(f"[REAL] Placed buy order for 1 share of {symbol}")
                     else:
                         self.logger.error(f"Failed to place buy order: {response.text}")
             elif action == "sell":
                 if self.simulate:
-                    if self.portfolio.get_position(symbol):
-                        self.portfolio.sell(symbol, close_price, 100)
+                    pass
+                    #TODO - implement portfolio class.
+                    #if self.portfolio.get_position(symbol):
+                    #    self.portfolio.sell(symbol, close_price, 100)
                 else:
+                    #TODO - implement dynamic, but persistent quantity, such that you do not change the sell quantity
+                    # to be different than the buy quantity.
+                    # 
+
                     order = {
                         "orderType": "MARKET",
                         "session": "NORMAL",
                         "duration": "DAY",
                         "orderStrategyType": "SINGLE",
                         "orderLegCollection": [
-                            {"instruction": "SELL", "quantity": 100, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
+                            {"instruction": "SELL", "quantity": 1, "instrument": {"symbol": symbol, "assetType": "EQUITY"}}
                         ]
                     }
-                    response = self.client.order_place(self.account_hash, order)
+                    response = self.client.order_place(self.account.getAccountHash(), order)
                     if response.ok:
-                        self.logger.info(f"[REAL] Placed sell order for 100 shares of {symbol}")
+                        self.logger.info(f"[REAL] Placed sell order for 1 shares of {symbol}")
                     else:
                         self.logger.error(f"Failed to place sell order: {response.text}")
 
