@@ -6,10 +6,84 @@ import zoneinfo
 import json
 import requests
 import logging
-from indicators import Indicators
-from portfolio import Portfolio
+#from indicators import Indicators
+#from portfolio import Portfolio
 from dotenv import load_dotenv
 from time import sleep, time
+
+class Indicators:
+    """ Indicators class: retrieves historical data, holds a small amount of past data, stores new data,
+        and calculates indicators.
+    
+        Args: (Parameters passed to the class constructor -> __init__)
+            client (schwabdev.Client): The Schwab API client instance.
+            symbol (str): the stock symbol to store information with.
+
+        Attributes: (Instance variables)
+            length (int): the minimum number of minutes of history to maintain to calculate all indicators.
+
+    """
+    def __init__(self, client, symbol):
+        """ Class constructor
+        """
+
+        self.client = client
+        self.symbol = symbol
+        self.length = 300  # 300 minutes is a rough overguestimate
+        self.candle_Minutely = []
+        self.ma18 = []
+        self.ma40 = []
+
+    def load_historical_data(self,symbol):
+        INITIAL_DAYS = 2
+        try:
+            history_response = self.client.price_history(
+                symbol=symbol,
+                periodType="day",
+                period=INITIAL_DAYS,
+                frequencyType="minute",
+                frequency=1,
+                needExtendedHoursData=True
+            )
+            if history_response.ok:
+                # Store the parsed data, not the response object
+                self.history_response = history_response.json()  # Or response.text if it’s not JSON
+                """Left off here"""
+                return True
+            else:
+                # Log the failure for debugging (optional)
+                logging.debug(f"Failed to refresh account linked: {response.status_code} - {response.text}")
+                return False
+        except requests.exceptions.RequestException as e:
+            # Handle network or API errors
+            logging.debug(f"Error refreshing account linked: {e}")
+            return False
+
+
+    def get(self, indicatorName, entry):
+        """ get method for various indicator data.
+
+            Args: 
+                indicatorName (str): Name of the indicator type to get.
+                entry (int): index of the desired calculated indicator. 
+
+        """
+        match indicatorName:
+            case "ma_18": 
+                #return self.ma18[entry]
+                pass
+            case "maLong": 
+                pass
+            case _:
+                pass
+        pass
+
+    def _MA(length,entry):
+        """ Private Method for calculating the Moving Average
+        """
+        pass 
+
+
 
 
 class AccountInformation:
@@ -27,11 +101,11 @@ class AccountInformation:
                 return True
             else:
                 # Log the failure for debugging (optional)
-                print(f"Failed to refresh account linked: {response.status_code} - {response.text}")
+                logging.debug(f"Failed to refresh account linked: {response.status_code} - {response.text}")
                 return False
         except requests.exceptions.RequestException as e:
             # Handle network or API errors
-            print(f"Error refreshing account linked: {e}")
+            logging.debug(f"Error refreshing account linked: {e}")
             return False
 
     def refreshAccountDetails(self,account_hash):
